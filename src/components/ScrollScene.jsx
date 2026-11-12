@@ -8,6 +8,7 @@ import TruckViewer from '../TruckViewer.jsx'
 import GlobeScene, { CITIES, captionAlpha } from './GlobeScene.jsx'
 import HeroOverlays from '../overlays/HeroOverlays.jsx'
 import GlobeOverlays from '../overlays/GlobeOverlays.jsx'
+import useLowPower from '../hooks/useLowPower.js'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -29,6 +30,9 @@ function Rig({ anim }) {
   const globeT = useMemo(() => new THREE.Vector3(), [])
   const followP = useMemo(() => new THREE.Vector3(), [])
   const followL = useMemo(() => new THREE.Vector3(), [])
+  const viewDirection = useMemo(() => new THREE.Vector3(), [])
+  const viewRight = useMemo(() => new THREE.Vector3(), [])
+  const viewUp = useMemo(() => new THREE.Vector3(), [])
   useFrame((state) => {
     camP.set(anim.camX, anim.camY, anim.camZ)
     lookT.set(0, 2 + (anim.truckY ?? 0), anim.truckZ)
@@ -40,6 +44,45 @@ function Rig({ anim }) {
       followL.set(anim.followLX, anim.followLY, anim.followLZ)
       camP.lerp(followP, fa)
       lookT.lerp(followL, fa)
+    }
+    // Frame the truck vertically below the portrait copy, then blend into the
+    // globe framing as the camera leaves the truck sequence.
+    const aspect = state.size.width / state.size.height
+    if (state.size.width <= 1024 && aspect < 1) {
+      const globeBlend = anim.lookBlend ?? 0
+      camP.x *= THREE.MathUtils.lerp(0.4, 1, globeBlend)
+      camP.y += 6 * (1 - globeBlend)
+      viewDirection.copy(camP).sub(lookT)
+      const cameraDistance = viewDirection.length()
+      viewDirection.normalize()
+      viewRight.set(0, 1, 0).cross(viewDirection).normalize()
+      viewUp.crossVectors(viewDirection, viewRight)
+
+      // Project the truck's bounds onto the camera axes. Opening the doors
+      // increases its width and length, so the cargo view also fits the frame.
+      const halfWidth = 1.6 + 1.2 * anim.open
+      const halfLength = 6.65 + 1.8 * anim.open
+      const projectedWidth = Math.abs(viewRight.x) * halfWidth + Math.abs(viewRight.z) * halfLength
+      const projectedHeight = Math.abs(viewUp.x) * halfWidth + Math.abs(viewUp.y) * 2.1 + Math.abs(viewUp.z) * halfLength
+      const projectedDepth = Math.abs(viewDirection.x) * halfWidth + Math.abs(viewDirection.y) * 2.1 + Math.abs(viewDirection.z) * halfLength
+      const sceneTop = Math.min(state.size.height * 0.58, 340 + (state.size.width - 390) * 0.25)
+      const sceneHeight = state.size.height - sceneTop - 28
+      const tanHalfFov = Math.tan(THREE.MathUtils.degToRad(state.camera.fov / 2))
+      const truckDistance = Math.max(
+        projectedWidth / (tanHalfFov * aspect * 0.88),
+        projectedHeight / (tanHalfFov * sceneHeight / state.size.height),
+      ) + projectedDepth
+      const globeFit = Math.max(1, (860 / state.size.height) ** 2)
+      const globeDistance = cameraDistance * Math.max(1, 1.15 * globeFit / aspect)
+      const distance = THREE.MathUtils.lerp(truckDistance, globeDistance, globeBlend)
+      camP.copy(lookT).addScaledVector(viewDirection, distance)
+      const copyOffset = distance * tanHalfFov * (sceneTop - 28) / state.size.height
+      camP.addScaledVector(viewUp, copyOffset * (1 - globeBlend))
+      lookT.addScaledVector(viewUp, copyOffset * (1 - globeBlend))
+      camP.y += distance * 0.015 * globeBlend
+      lookT.y += distance * 0.015 * globeBlend
+    } else if (state.size.width <= 1024) {
+      camP.sub(lookT).multiplyScalar(1.4).add(lookT)
     }
     state.camera.position.copy(camP)
     state.camera.lookAt(lookT)
@@ -149,6 +192,7 @@ function buildGlobeTimeline(anim) {
 }
 
 export default function ScrollScene() {
+  const lowPower = useLowPower()
   const anim = useRef({
     // Camera (stage 1 idle: front-left hero)
     camX: -12,
@@ -205,7 +249,14 @@ export default function ScrollScene() {
     }, rootRef)
 
     ScrollTrigger.refresh()
-    return () => ctx.revert()
+    // Mobile browsers can suppress ScrollTrigger's resize refresh. Observe the
+    // actual scroll track so rotation keeps the timeline and overlays in sync.
+    const resizeObserver = new ResizeObserver(() => ScrollTrigger.refresh())
+    resizeObserver.observe(rootRef.current)
+    return () => {
+      resizeObserver.disconnect()
+      ctx.revert()
+    }
   }, [anim])
 
   return (
@@ -213,7 +264,8 @@ export default function ScrollScene() {
       <div className="canvas-wrap">
         <Canvas
           shadows
-          dpr={[1, 1.5]}
+          dpr={lowPower ? 1 : [1, 1.5]}
+          style={{ touchAction: 'pan-y' }}
           camera={{ position: [-12, 6, -15], fov: 45, near: 0.1, far: 300 }}
         >
           <color attach="background" args={['#0a1a3a']} />
@@ -222,7 +274,7 @@ export default function ScrollScene() {
             position={[12, 18, 10]}
             intensity={2.2}
             castShadow
-            shadow-mapSize={[2048, 2048]}
+            shadow-mapSize={lowPower ? [1024, 1024] : [2048, 2048]}
           />
           <directionalLight position={[-10, 8, -12]} intensity={0.6} color="#9db4ff" />
           <hemisphereLight args={['#bcd0ff', '#0a1a3a', 0.4]} />

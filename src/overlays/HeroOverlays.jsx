@@ -12,9 +12,10 @@ function paint(el, a, centered) {
   el.style.opacity = a.toFixed(3)
   const rise = (1 - a) * 16
   el.style.transform = centered
-    ? `translate(0, calc(-50% + ${rise}px))`
+    ? `translate(0, calc(var(--ov-center, -50%) + ${rise}px))`
     : `translateY(${rise}px)`
   el.style.pointerEvents = a > 0.6 ? 'auto' : 'none'
+  el.inert = a <= 0.6
 }
 
 export default function HeroOverlays() {
@@ -38,7 +39,7 @@ export default function HeroOverlays() {
   }, [])
 
   return (
-    <div className="sr-overlay" aria-hidden="false">
+    <div className="sr-overlay hero-overlay" aria-hidden="false">
       {/* SIDE — hero heading + CTAs */}
       <div className="ov-panel left" ref={heading}>
         <span className="ov-eyebrow">Transportation &amp; Supply Chain</span>

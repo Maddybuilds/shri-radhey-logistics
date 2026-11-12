@@ -46,9 +46,12 @@ export default function GlobeOverlays() {
       const a = band(p, 0.48, 0.56, 0.7, 0.75)
       if (panel.current) {
         panel.current.style.opacity = a.toFixed(3)
-        panel.current.style.transform = `translate(0, calc(-50% + ${(1 - a) * 16}px))`
+        panel.current.style.transform = `translate(0, calc(var(--ov-center, -50%) + ${(1 - a) * 16}px))`
       }
-      if (pin.current) pin.current.style.opacity = a.toFixed(3)
+      if (pin.current) {
+        pin.current.style.opacity = a.toFixed(3)
+        pin.current.style.pointerEvents = a > 0.6 ? 'auto' : 'none'
+      }
       // Kick off the counters once we enter the window.
       if (!isLive && p > 0.52) {
         isLive = true
@@ -63,7 +66,7 @@ export default function GlobeOverlays() {
   const current = CITIES.find((c) => c.key === active) || CITIES[0]
 
   return (
-    <div className="sr-overlay">
+    <div className="sr-overlay globe-overlay">
       <div className="ov-panel left" ref={panel}>
         <span className="ov-eyebrow">Our Network</span>
         <h2 className="ov-title" style={{ fontSize: 'clamp(2.4rem, 5.5vw, 4rem)' }}>

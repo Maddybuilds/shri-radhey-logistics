@@ -193,3 +193,21 @@ body {
   background: #2a72ff;
   transform: translateY(-2px);
 }
+
+@media (max-width: 1024px) {
+  .scroll-root { height: 1100svh; }
+  .canvas-wrap { height: 100svh; }
+  .overlay { bottom: auto; height: 100svh; }
+
+  .city-caption.side,
+  .city-caption.bottom {
+    left: 20px;
+    right: 20px;
+    top: auto;
+    bottom: calc(40px + env(safe-area-inset-bottom));
+    transform: none;
+    text-align: center;
+  }
+  .cc-name { font-size: clamp(32px, 8vw, 56px); }
+  .cc-role { font-size: 12px; letter-spacing: 0.12em; }
+}

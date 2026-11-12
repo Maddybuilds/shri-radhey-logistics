@@ -449,7 +449,7 @@
 }
 
 /* Brand / logo */
-.brand { display: inline-flex; align-items: center; gap: 12px; }
+.brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; }
 .brand-mark {
   width: 44px;
   height: 44px;
@@ -1937,10 +1937,17 @@ a.channel-val:hover { color: var(--powder-blue); }
   .served-layout { grid-template-columns: 1fr; }
   .served-intro { position: static; }
   .footer-grid { grid-template-columns: 1.4fr 1fr 1fr; }
-  .footer-about { grid-column: 1 / -1; }
+  .footer-about-col { grid-column: 1 / -1; }
 }
 
-@media (max-width: 860px) {
+@media (max-width: 1024px) {
+  .nav-inner { gap: 12px; padding: 12px 20px; }
+  .brand { gap: 8px; min-width: 0; }
+  .brand-text { min-width: 0; }
+  .brand-name { white-space: nowrap; }
+  .brand-sub { font-size: 0.58rem; letter-spacing: 0.12em; white-space: nowrap; }
+  .nav-cta { gap: 6px; flex-shrink: 0; }
+  .nav-cta .btn { padding: 12px 14px; }
   .nav-links { display: none; }
   .nav-cta .btn--ghost { display: none; }
   .nav-toggle { display: inline-flex; }
@@ -1975,8 +1982,82 @@ a.channel-val:hover { color: var(--powder-blue); }
   .pin-panel { right: auto; left: clamp(24px, 6vw, 96px); }
 }
 
+/* Keep scene copy above the 3D subject, with office details below the globe. */
+@media (max-width: 1024px) and (orientation: portrait) {
+  .sr-overlay {
+    --ov-center: 0%;
+    bottom: auto;
+    height: 100svh;
+  }
+  .sr-overlay .ov-panel.left,
+  .sr-overlay .ov-panel.right,
+  .sr-overlay .ov-panel.bottom-left {
+    left: 20px;
+    right: 20px;
+    top: calc(96px + env(safe-area-inset-top));
+    bottom: auto;
+    max-width: none;
+    text-align: left;
+  }
+  .ov-eyebrow { font-size: 10px; letter-spacing: 0.15em; margin-bottom: 10px; }
+  .ov-title { max-width: 12ch; font-size: clamp(2rem, 9vw, 3.6rem); margin: 0; }
+  .hero-overlay .ov-title { font-size: clamp(2.2rem, 10vw, 3.5rem); }
+  .hero-overlay .ov-sub { font-size: 1.03rem; line-height: 1.45; }
+  .ov-sub { margin-top: 12px; font-size: 0.95rem; max-width: 32ch; }
+  .ov-cta { margin-top: 18px; gap: 10px; flex-wrap: wrap; }
+  .ov-cta .btn { min-height: 44px; padding: 12px 18px; font-size: 0.88rem; }
+  .ov-stats { margin-top: 16px; gap: 16px 24px; }
+  .ov-stat .num { font-size: clamp(1.6rem, 6vw, 2.4rem); }
+  .ov-stat .label { font-size: 0.65rem; }
+  .sr-overlay .ov-stats { justify-content: flex-start !important; }
+  .globe-overlay .ov-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .globe-overlay .ov-stat .num { font-size: clamp(1.25rem, 5.5vw, 2rem); }
+  .ov-chips { margin-top: 10px; gap: 8px; }
+  .ov-chip { padding: 8px 12px; font-size: 0.8rem; }
+  .pin-panel {
+    left: 20px;
+    right: 20px;
+    bottom: calc(20px + env(safe-area-inset-bottom));
+    max-width: none;
+    padding: 16px;
+  }
+  .pin-tabs { gap: 6px; margin-bottom: 10px; }
+  .pin-tab { flex: 1; padding: 10px 8px; font-size: 0.75rem; min-height: 44px; }
+  .pin-panel h4 { font-size: 1rem; margin: 8px 0 4px; }
+  .pin-panel p { font-size: 0.8rem; margin: 0; }
+}
+
+@media (max-width: 1024px) and (orientation: landscape) {
+  .sr-overlay .ov-panel { max-width: 44%; }
+  .ov-panel.left, .ov-panel.right { left: 20px; right: auto; top: 54%; }
+  .ov-panel.bottom-left { left: 20px; bottom: 20px; }
+  .ov-eyebrow { font-size: 10px; margin-bottom: 8px; }
+  .ov-title { font-size: 1.9rem; }
+  .ov-sub { margin-top: 10px; font-size: 0.85rem; }
+  .ov-cta, .ov-stats, .ov-chips { margin-top: 12px; gap: 8px; flex-wrap: wrap; }
+  .ov-cta .btn { padding: 10px 12px; font-size: 0.8rem; }
+  .ov-chip { padding: 8px 10px; font-size: 0.8rem; }
+  .pin-panel { left: auto; right: 20px; bottom: 20px; width: 44%; padding: 14px; }
+  .pin-tab { padding: 10px; min-height: 44px; }
+  .globe-overlay .ov-panel { max-width: 30%; }
+  .globe-overlay .ov-title { margin: 0; }
+  .globe-overlay .ov-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .globe-overlay .ov-stat .num { font-size: 1.5rem; }
+  .globe-overlay .ov-stat .label { font-size: 0.6rem; }
+  .globe-overlay .pin-panel { width: 30%; }
+  .pin-panel h4 { margin: 8px 0 4px; font-size: 1rem; }
+  .pin-panel p { margin: 0; font-size: 0.8rem; }
+}
+
 @media (max-width: 560px) {
+  .nav-inner { padding-inline: 16px; gap: 10px; }
+  .nav .brand-mark { width: 38px; height: 38px; }
+  .nav .brand-name { font-size: 0.9rem; }
+  .nav .brand-sub { font-size: 0.5rem; }
+  .nav-cta .btn { padding-inline: 10px; font-size: 0.8rem; }
   .sr-site { font-size: 16px; }
+  .sr-site .btn { max-width: 100%; white-space: normal; line-height: 1.35; }
+  .fleet-intro, .fleet-features { min-width: 0; }
   .grid-2,
   .grid-3,
   .grid-4,
@@ -1991,13 +2072,21 @@ a.channel-val:hover { color: var(--powder-blue); }
   .field-row { grid-template-columns: 1fr; }
   .assist-actions { width: 100%; }
   .assist-actions .btn { flex: 1; }
-  .footer-grid { grid-template-columns: 1fr 1fr; }
-  .footer-about { grid-column: 1 / -1; }
+  .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .footer-col { min-width: 0; }
+  .footer-loc a, .footer-loc span { min-width: 0; overflow-wrap: anywhere; }
+  .footer-about-col { grid-column: 1 / -1; }
   .footer-bottom { flex-direction: column; text-align: center; }
   .modal-secondary { flex-direction: column; }
   .quote-fields { grid-template-columns: 1fr !important; }
   .spec-chips { gap: 8px; }
   .ov-stats { gap: 18px; }
+}
+
+@media (max-width: 380px) {
+  .nav-inner { padding-inline: 12px; gap: 8px; }
+  .nav-cta .btn { font-size: 0.78rem; }
+  .nav-cta .btn svg { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
